@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.4/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/vue/3.2.36/vue.global.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.min.js"></script>
+    <link rel="stylesheet" href="https://qmsg.refrain.xyz/message.min.css">
+    <script src="https://qmsg.refrain.xyz/message.min.js"></script>
+    <meta name="description" content="心鼠工坊，尽情创造世界！">
+    <meta name="keywords" content="Starlight Studio,星光工作室,心鼠工坊，迷你世界社区,编程,文创">
+    <link rel="shortcut icon" href="https://ustarry.github.io/favicon.ico" type="image/x-icon">
+    <meta name="robots" content="all">
+    <link rel="stylesheet" href="css/musicplayer.css">
+    <title>心鼠播放器 | 心鼠工坊</title>
+</head>
+<body>
+    <div id="app">
+        <div class="top">
+            <h3>心鼠播放器</h3>
+            <div class="func">
+                <input type="text" v-model="search_song" placeholder="搜你所喜爱的歌曲/歌手" @keydown="search_music($event, false)">
+                <i class="bi bi-search" @click="search_music(null, true)" title="点我搜索相关音乐"></i>
+                <i class="bi bi-music-note-list" @click="show_search_list=!show_search_list" title="点我切换视图为搜索结果或播放列表"></i>
+                <i class="bi bi-tools" @click="show_setting=!show_setting" title="点我查看播放器操作菜单"></i>
+            </div>
+        </div>
+        <div class="center">
+            <ul class="no_scroll_bar">
+                <div v-if="show_search_list">
+                    <!-- <h5>搜索结果</h5> -->
+                    <li v-for="(item, key) in view_list()"> 
+                        <span> {{ item.author }} - {{ item.title }}</span>
+                        <i class="bi bi-play-fill" @click="play_or_pause(1, key)" title="播放这首歌"></i>
+                        <i class="bi bi-download" @click="download_music(item.url)" title="下载这首歌"></i>
+                        <i class="bi bi-plus-lg" @click="add_to_my_list(key)" title="添加到播放列表"></i>
+                    </li>
+                </div>
+                <div v-else>
+                    <!-- <h5>播放列表</h5> -->
+                    <li v-for="(item, key) in view_list()"> 
+                        <span> {{ item.author }} - {{ item.title }} </span>
+                        <i class="bi bi-play-fill" @click="play_or_pause(1, key)" title="播放这首歌"></i>
+                        <i class="bi bi-download" @click="download_music(item.url)" title="下载这首歌"></i>
+                        <i class="bi bi-eraser" @click="$event.target.parentNode.remove()" title="从播放列表移除"></i>
+                    </li>
+                </div>
+            </ul>
+        </div>
+        <div class="bottom">
+            <div class="left">
+                <img :src="cover" alt="Image Not Found" :class="{ rolation: is_playing }">
+            </div>
+            <div class="right">
+                <p> {{ song_playing }} </p>
+                <p>
+                    <i class="bi bi-skip-start-fill"></i>
+                    <i :class="is_playing ? `bi bi-pause-fill` : `bi bi-play-fill`" @click="play_or_pause(0)"></i>
+                    <i class="bi bi-skip-end-fill"></i>
+                </p>
+                <div class="process_bar" @mousemove="change_music_time($event)" id="process_bar">
+                    <div class="thumb" :style="`width: ${playoffset}px;`"></div>
+                </div>
+                <audio preload="auto" id="audio"></audio>
+            </div>
+        </div>
+        <div class="setting form" v-show="show_setting">
+            <h3>心鼠播放器开发者功能<i class="bi bi-escape" style="float: right;" @click="show_setting=!show_setting"></i></h3>
+            <p>添加歌单内歌曲到播放器 <input type="text" v-model="songs_link" placeholder="输入歌单链接，快速添加音乐到播放器" style="width: 80%;"> <span class="button"  @click="analyze_song_list()">解析</span></p>
+            <p>保存歌单歌曲，下次访问自动恢复(需联网) <span class="button"  @click="save_song_list()">保存</span></p>
+            <p>音乐搜索渠道: <select v-model="platform">
+                <option value="netease">网易云音乐</option>
+                <option value="qq">QQ音乐</option>
+                <option value="kugou">酷狗音乐</option>
+                <option value="migu">咪咕音乐</option>
+            </select></p>
+            <p>显示歌词 <i class="bi bi-toggle-off"></i></p>
+        </div>
+    </div>
+    <script>
+        let my_app = {
+            data()
+            {
+                return{
+                    search_song: "",
+                    songs_link: "",
+                    my_list: [],
+                    search_list: [],
+                    process_bar: undefined,
+                    audio: undefined,
+                    current_index: -1,
+                    is_playing: false,
+                    show_search_list: true,
+                    show_setting: false,
+                    playoffset: 0,
+                    platform: "netease",
+                    cover: "https://ustarry.github.io/umouse/favicon.ico",
+                    song_playing: "未播放任何曲目",
+                }
+            },
+            methods:
+            {
+                view_list()
+                {
+                    return this.show_search_list ? this.search_list : this.my_list;
+                },
+                search_music(e, code)
+                {
+                    if (e && e.keyCode == 13)
+                    {
+                        e.target.blur();
+                    }
+                    if (code || e && e.keyCode == 13)
+                    {
+                        var loading = Qmsg.loading("正在搜索中...")
+                        $.getJSON(`https://api.gumengya.com/Api/Music?format=json&text=${this.search_song}&site=${this.platform}&page=1`,
+                        function(data)
+                        {
+                            loading.close();
+                            if (data.code == 200)
+                            {
+                                this.search_list = data.data;
+                            }
+                            else
+                            {
+                                Qmsg.error("搜索无结果！")
+                            }
+                        }.bind(this));
+                    }
+                },
+                download_music(url)
+                {
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.type = "audio/*"
+                    a.target = "_blank";
+                    a.download = "file"
+                    document.body.appendChild(a);
+                    a.click();
+                    // a.remove();
+                },
+                play_or_pause(command, index)
+                {
+                    this.current_index = index;
+                    this.audio.pause();
+                    switch(command)
+                    {
+                    case 0: // play or pause
+                        if (this.current_index == -1) {return;}
+                        if (!this.is_playing)
+                        {
+                            this.audio.play();
+                        }
+                        
+                        this.is_playing = !this.is_playing;
+                        break;
+                    case 1: // must play
+                        this.audio.src = this.view_list()[index].url;
+                        this.audio.play();
+                        this.is_playing = true;
+                        this.cover = this.view_list()[index].pic;
+                        this.song_playing = `${this.view_list()[index].author} - ${this.view_list()[index].title}`;
+                        break;
+                    case 2: // must stop
+                        this.is_playing = false;
+                        break;
+                    }
+                },
+                change_music_time(e)
+                {
+                    if (e.buttons ^ 1 == 0)
+                    {
+                        var offset_x = e.offsetX;
+                        if (offset_x <= this.process_bar.clientWidth)
+                        {
+                            this.playoffset = offset_x;
+                            this.audio.currentTime = offset_x* this.audio.duration / this.process_bar.clientWidth;
+                        }
+                    }
+                },
+                add_to_my_list(key)
+                {
+                    this.my_list.push(this.search_list[key]);
+                },
+                analyze_song_list()
+                {
+                    Qmsg.info("此功能等待开发中！")
+                },
+                save_song_list()
+                {
+                    localStorage.setItem("musicplayer_mylist", JSON.stringify(this.my_list));
+                    Qmsg.info("成功保存歌单!");
+                }
+            },
+            mounted()
+            {
+                Qmsg.info("播放器已成功初始化!");
+                try
+                {
+                    var storage = localStorage.getItem("musicplayer_mylist");
+                    if (storage != null)
+                    {
+                        this.my_list = JSON.parse(storage);
+                    }
+                }
+                catch(SyntaxError)
+                {
+                    Qmsg.error("后台记录歌单数据损坏，已重置记录！");
+                    this.my_list = [];
+                }
+                this.process_bar = document.getElementById("process_bar");
+                this.audio = document.getElementById("audio");
+                this.audio.onerror = function(e)
+                {
+                    Qmsg.error("无效歌曲，尝试其他的吧！");
+                    this.play_or_pause(2);
+                    this.current_index = -1;
+                }.bind(this);
+
+                this.audio.ontimeupdate = function(e)
+                {
+                    this.playoffset = this.process_bar.clientWidth * (this.audio.currentTime / this.audio.duration)
+                }.bind(this);
+
+                this.audio.onended = function(e)
+                {
+                    ++this.current_index;
+                    if (this.current_index == this.view_list().length)
+                    {
+                        this.current_index = 0;
+                    }
+                    this.play_or_pause(1, this.current_index);
+                }.bind(this);
+            }
+        }
+        Vue.createApp(my_app).mount("#app");
+    </script>
+</body>
+</html>

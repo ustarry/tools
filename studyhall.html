@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.4/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/vue/3.2.36/vue.global.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.min.js"></script>
+    <link rel="stylesheet" href="https://qmsg.refrain.xyz/message.min.css">
+    <script src="https://qmsg.refrain.xyz/message.min.js"></script>
+    <meta name="description" content="心鼠工坊，尽情创造世界！">
+    <meta name="keywords" content="Starlight Studio,星光工作室,心鼠工坊，迷你世界社区,编程,文创">
+    <link rel="shortcut icon" href="https://ustarry.github.io/favicon.ico" type="image/x-icon">
+    <meta name="robots" content="all">
+    <title>心鼠自习室 | 心鼠工坊</title>
+    <link rel="stylesheet" href="css/studyhall.css">
+</head>
+
+<body>
+    <div id="app">
+        <img class="main_cover" src="https://bing.img.run/uhd.php"></img>
+        <div class="main">
+            <ul class="tool_bar">
+                <li class="bi bi-table" @click="current_view=0"></li>
+                <li class="bi bi-music-note-list" @click="current_view=1"></li>
+                <li class="bi bi-joystick" @click="current_view=2"></li>
+            </ul>
+            <div class="view">
+                <div class="schedule_view" v-show="current_view == 0">
+                    <div class="time">
+                        <h2> {{ is_learning ? "学习中..." : "休息中~~"}} </h2>
+                        <p>学习时间 {{ make_learn_time(learn_time) }} <br> 任务进度 {{ finished }}/{{ all }}</p>
+                        <p><span @click="study_or_rest()"> {{ is_learning ? "休息一下" : "开始学习" }}</span><span @click="add_task()">添加任务</span></p>
+                    </div>
+                    <ul class="todos no_scroll_bar">
+                        <li v-for="(item, key) in todo_list" @contextmenu="show_todo_menu($event)"> {{ item }} </li>
+                    </ul>
+                </div>
+                <div class="music_view no_scroll_bar"  v-show="current_view == 1">
+                    <iframe src="musicplayer.html" scrolling="no" frameborder="0" id="music_player" class="music_player no_scroll_bar"></iframe>
+                </div>
+                <div class="setting_view no_scroll_bar"  v-show="current_view == 2">
+                    <h3>心鼠自习室开发者功能</h3>
+                    <h4>公告</h4>
+                    <p>这里是心鼠自习室，你可以在这里快乐的自习哦！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let my_app = {
+            data()
+            {
+                return {
+                    is_learning: false,
+                    learn_time: 0,
+                    finished: 0,
+                    all: 0,
+                    todo_list: [],
+                    current_view: 0,
+                }
+            },
+            methods:
+            {
+                make_learn_time(learn_time)
+                {
+                    var hour = Math.floor(learn_time / 3600);
+                    var min = Math.floor((learn_time % 3600) / 60);
+                    var sec = Math.floor(learn_time - min * 60 - hour * 3600);
+                    return `${hour}小时${min}分钟${sec}秒`
+                },
+                study_or_rest()
+                {
+                    if (!this.is_learning)
+                    {
+                        var id = setInterval(function()
+                        {
+                            if (this.is_learning)
+                            {
+                                ++this.learn_time;
+                                if (this.learn_time % 300 == 0)
+                                {
+                                    Qmsg.info(`今日你已累计学习$${this.make_learn_time(this.learn_time)}，很棒哦!`)
+                                }
+                            }
+                            else
+                            {
+                                clearInterval(id);
+                            }
+                        }.bind(this), 1000)
+                    }
+                    this.is_learning = !this.is_learning;
+                },
+                add_task()
+                {
+                    var task_msg = prompt("请添加你要完成的任务吧！", "拿捏数学&轻松脱单");
+                    if (task_msg.replace(/\s*/g, "").length == 0) 
+                    {
+                        return;
+                    }
+                    Qmsg.info("添加任务成功！")
+                    this.todo_list.push(task_msg);
+                    ++this.all;
+                },
+                show_todo_menu(e)
+                {
+                    e.preventDefault();
+                    if (e.target.className == "finished") return;
+                    var my_menu = document.createElement("div");
+                    my_menu.innerHTML = `<p>完成任务</p><p>删掉任务</p><p>取消操作</p>`;
+                    document.body.appendChild(my_menu);
+                    my_menu.style = `position: absolute; top: ${e.clientY}px; left: ${e.clientX}px;width: 80px; background-color: white; z-index: 99; padding: 9px; border-radius: 9px; text-align:center; curson: pointer;`
+                    document.addEventListener("mousedown", function(ev)
+                    {
+                        if (ev.target == my_menu.children[0])
+                        {
+                            Qmsg.info(`好棒！你又完成了一个任务！`);
+                            e.target.className = "finished";
+                            ++this.finished;
+                        }
+                        else if (ev.target == my_menu.children[1])
+                        {
+                            Qmsg.info(`任务虽难，勇气可嘉！`);
+                            e.target.style = "display: none;"
+                            --this.all;
+                        }
+                        my_menu.remove();
+                    }.bind(this), {once:true})
+                }
+            }
+        }
+        Vue.createApp(my_app).mount("#app");
+    </script>
+</body>
+</html>

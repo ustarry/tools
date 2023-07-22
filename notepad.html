@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.4/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- <script src="https://cdn.staticfile.org/vue/3.2.36/vue.global.min.js"></script> -->
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.min.js"></script>
+    <link rel="stylesheet" href="https://qmsg.refrain.xyz/message.min.css">
+    <script src="https://qmsg.refrain.xyz/message.min.js"></script>
+    <meta name="description" content="心鼠工坊，尽情创造世界！">
+    <meta name="keywords" content="Starlight Studio,星光工作室,心鼠工坊，迷你世界社区,编程,文创">
+    <link rel="shortcut icon" href="https://ustarry.github.io/favicon.ico" type="image/x-icon">
+    <meta name="robots" content="all">
+    <title>心鼠记事本 | 心鼠工坊</title>
+    <link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">
+<style>
+    *
+    {
+        
+        margin: 0;
+        padding: 0;
+    }
+    .title_bar
+    {
+        width: 100%;
+        height: 50px;
+        line-height: 50px;
+        background-color: aquamarine;
+        box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 15%), inset 0 -1px 0 rgb(0 0 0 / 15%);
+    }
+    .title_bar span
+    {
+        font-weight: bold;
+        padding: 0 1em;
+        
+    }
+  #editor—wrapper {
+    border: 1px solid #ccc;
+    z-index: 100; /* 按需定义 */
+    height: calc(100vh - 70px);
+  }
+  #toolbar-container { border-bottom: 1px solid #ccc; }
+  #editor-container {  }
+</style>
+</head>
+<body>
+    <div class="title_bar">
+        <span>心鼠记事本</span>
+        <a href="javascript:Qmsg.info(`等待开发`)">生成</a>
+    </div>
+    <div id="editor—wrapper">
+        <div id="toolbar-container"><!-- 工具栏 --></div>
+        <div id="editor-container"><!-- 编辑器 --></div>
+    </div>
+    <script src="https://unpkg.com/@wangeditor/editor@latest/dist/index.js"></script>
+<script>
+const { createEditor, createToolbar } = window.wangEditor
+
+const editorConfig = {
+    placeholder: 'Type here...',
+    onChange(editor) {
+      const html = editor.getHtml()
+      console.log('editor content', html)
+      // 也可以同步到 <textarea>
+    }
+}
+
+const editor = createEditor({
+    selector: '#editor-container',
+    html: '<p><br></p>',
+    config: editorConfig,
+    mode: 'default', // or 'simple'
+})
+
+const toolbarConfig = {}
+
+const toolbar = createToolbar({
+    editor,
+    selector: '#toolbar-container',
+    config: toolbarConfig,
+    mode: 'simple', // or 'simple'
+})
+</script>
+</body>
+</html>

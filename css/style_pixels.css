@@ -1,0 +1,115 @@
+*
+{
+    margin: 0;
+    padding: 0;
+}
+
+.no_scroll_bar
+{
+    /* hide the scrollbar for IE */
+    -ms-overflow-style: none;
+    /* hide the scrollbar for FIREFOX */
+    overflow: -moz-scrollbars-none;
+}
+
+/* hide the scrollbar for CHROME */
+.no_scroll_bar::-webkit-scrollbar
+{
+    width: 0;
+}
+
+#app
+{
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    background-image: url(https://s1.ax1x.com/2023/01/12/pSuJfij.jpg);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+.container
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 85%;
+    height: 89%;
+    max-width: 600px;
+    max-height: 700px;
+    text-align: center;
+    border-radius: 9px;
+    background-color: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+}
+
+.container h1
+{
+    height: 50px;
+    line-height: 50px;
+}
+
+.main
+{
+    width: 96%;
+    height: calc(100% - 50px);
+    margin: auto;
+}
+
+.preview
+{
+    width: 100%;
+    height: calc(100% - 160px);
+    overflow: scroll;
+}
+
+.options
+{
+    width: 100%;
+    height: 160px;
+}
+
+.first, .second, .third
+{
+    padding-top: 5px;
+    width: 100%;
+    height: 40px;
+    clear: both;
+}
+
+.label
+{
+    display: block;
+    float: left;
+    height: 35px;
+    margin-left: 9px;
+    line-height: 35px;
+    width: max-content;
+}
+
+.button
+{
+    display: block;
+    float: left;
+    margin-left: 9px;
+    width: 70px;
+    height: 35px;
+    background-image: linear-gradient(to right, #EAD6EE, #A0F1EA);
+    border-radius: 9px;
+    line-height: 35px;
+    cursor: pointer;
+}
+
+.options input
+{
+    float: left;
+    height: 35px;
+    width: 50px;
+    margin-left: 9px;
+    border-radius: 9px;
+    border: none;
+    outline: none;
+}

@@ -1,0 +1,238 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心鼠像素工具 | 心鼠工坊</title>
+    <link rel="stylesheet" href="/css/style_pixels.css">
+    <script src="https://cdn.staticfile.org/vue/3.2.36/vue.global.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/sprintf/1.1.2/sprintf.min.js"></script>
+    <link rel="stylesheet" href="https://qmsg.refrain.xyz/message.min.css">
+    <script src="https://qmsg.refrain.xyz/message.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>{{mode_name}}</h1>
+            <div class="main">
+                <div class="preview no_scroll_bar">
+                    <canvas id="my_canvas">
+                    </canvas>
+                    <!-- <img id="my_img" :src="selected_image" :style="display: hidden;"> -->
+                </div>
+                
+                <div class="options">
+                    <div class="first">
+                        <div v-if="mode_making_image">
+                            <span class="label">缩放宽高</span><input type="number" placeholder="缩放宽度" v-model="target_width" @change="resize_image()" min="1" step="1">
+                            <input type="number" placeholder="缩放高度" v-model="target_height" @change="resize_image()" min="1" step="1">
+                        <!-- <span class="label">圆角</span> <input type="number" placeholder="大小" v-model="radius_number" @change="resize_image()" min="0" step="1"> -->
+                        </div>
+                        <div v-if="!mode_making_image">
+                            <span class="label">文字内容</span><input type="text" placeholder="输入" v-model="text" @change="show_text()">
+                        </div>
+                    </div>
+                    <div class="second">
+                        <span class="label">放置方式</span>
+                        <select v-model="place_option">
+                            <option value="0">水平顶部朝北</option>
+                            <option value="1">水平顶部朝西</option>
+                            <option value="2">水平顶部朝南</option>
+                            <option value="3">水平顶部朝东</option>
+                            <option value="4">竖直正面朝北</option>
+                            <option value="4">竖直正面朝西</option>
+                            <option value="4">竖直正面朝南</option>
+                            <option value="4">竖直正面朝东</option>
+                        </select>
+                    </div>
+                    <div class="third">
+                        <span class="button" @click="select_image()">上传图片</span>
+                        <span class="button" @click="generate_script()">构建脚本</span>
+                        <span class="button" @click="change_mode()">切换模式</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MyApp = {
+            data() {
+                return {
+                    origin_width: 0,
+                    origin_height: 0,
+                    target_width: 0,
+                    target_height: 0,
+                    radius_number: 0,
+
+                    text: "",
+
+                    mode_making_image: true,
+                    mode_name: "心鼠像素画",
+                    selected_image: '',
+                    place_option: "0",
+                    loaded_img: null,
+                }
+            },
+            methods: {
+                change_mode()
+                {
+                    if (this.mode_making_image)
+                    {
+                        this.mode_name = "心鼠像素字"
+                    }
+                    else
+                    {
+                        this.mode_name = "心鼠像素画"
+                    }
+                    this.mode_making_image = !this.mode_making_image
+                },
+                select_image()
+                {
+                    var show_image = this.show_image;
+                    var myinput = document.createElement("input");
+                    myinput.type = "file";
+                    myinput.onchange = function(event)
+                    {
+                        // console.log(event.target.files[0]);
+                        var reader = new FileReader();
+                        reader.onload = function(event)
+                        {
+                            this.show_image(event);
+                        }.bind(this);
+                        reader.readAsDataURL(event.target.files[0]);
+                    }.bind(this)
+                    myinput.click();
+                    // document.body.removeChild(myinput);
+                },
+                check_data()
+                {
+                    if (this.mode_making_image) 
+                    {
+                        if (this.origin_width == 0 || this.origin_height == 0) 
+                        {
+                            Qmsg.error("未上传图片，请先上传");
+                            return;
+                        }
+                        var img = new Image();
+                        img.onload = function()
+                        {
+                            this.generate_script();
+                        }.bind(this)
+                    }
+                    else
+                    {
+                        if (this.text.length == 0)
+                        {
+                            Qmsg.error("写几个字好不好")
+                            return;
+                        }
+                        this.generate_script();
+                    }
+                },
+                generate_script()
+                {
+                    if (this.target_width == 0) return;
+                    var canvas = document.getElementById("my_canvas");
+                    var context = canvas.getContext("2d");
+                    var data = context.getImageData(0, 0, this.target_width, this.target_height).data;
+                    // console.log(data);
+
+                    var count = 0;
+                    var buffer = "";
+                    var script = "";
+
+                    for (var i = 0; i < data.length; i += 4)
+                    {
+                        if (data[i + 3] > 3)
+                        {
+                            var result = sprintf("0x%02x%02x%02x", data[i], data[i + 1], data[i + 2]);
+                            buffer += `${result}, `;
+                        }
+                        else
+                        {
+                            buffer += "0, ";
+                        }
+                        ++count;
+                        if (count == this.target_width)
+                        {
+                            script = `${buffer},${script}`;
+                            buffer = "";
+                            count = 0;
+                        }
+                    }
+                    
+                    script = `local data = {${script}};local r, x, y, z = Player:getPosition(0);for i = 1, ${data.length} do if (data[i] ~= 0) then local j = i % ${this.target_width}; Block:placeBlock(600, x + 2, y + i - 1, z + j - 1, 0, data[i][j]) end end`
+                    console.log(script);
+
+                    var dummy = document.createElement("textarea");
+                    document.body.appendChild(dummy);
+                    dummy.value = script;
+                    dummy.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(dummy);
+                    confirm("脚本已写入到剪贴板。拷贝脚本到游戏运行，将在房主位置附近放置像素画")
+                    // console.log("像素点数量" + count)
+                },
+                resize_image()
+                {
+                    this.target_width = (this.target_width <= 0 || this.target_width > this.origin_width) ? this.origin_width : this.target_width;
+                    this.target_height = (this.target_height <= 0 || this.target_height > this.origin_height) ? this.origin_height : this.target_height;
+                    this.radius_number = (this.radius_number < 0 ? 0 : this.radius_number);
+                    if (!this.loaded_img)
+                    {
+                        Qmsg.error("未上传图片，请先上传");
+                        return;
+                    }
+                    
+                    var canvas = document.getElementById("my_canvas");
+                    var context = canvas.getContext("2d");
+                    canvas.width = this.target_width;
+                    canvas.height = this.target_height;
+                    
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    context.drawImage(this.loaded_img, 0, 0, this.target_width, this.target_height)
+                },
+                show_text(event)
+                {
+                    var canvas = document.getElementById("my_canvas");
+                    var context = canvas.getContext("2d");
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    context.font = "20px Microsoft Yahei"
+                    context.fillText(this.text, 0, 20);
+                },
+                show_image(event)
+                {
+                    // var my_img = document.getElementById("my_img");
+                    var canvas = document.getElementById("my_canvas");
+                    var context = canvas.getContext("2d");
+                    this.loaded_img = new Image();
+                    this.loaded_img.src = event.target.result;
+                    var loaded_img = this.loaded_img;
+
+                    loaded_img.onload = function() 
+                    {
+                        this.origin_width = loaded_img.width;
+                        this.origin_height = loaded_img.height;
+                        this.target_width = this.origin_width;
+                        this.target_height = this.origin_height;
+                        canvas.width = this.origin_width;
+                        canvas.height = this.origin_height;
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                        context.drawImage(loaded_img, 0, 0)
+                    }.bind(this)
+                    loaded_img.onerror = function()
+                    {
+                        reference.loaded_img = null;
+                        Qmsg.error("上传文件非图片，请上传图片文件！");
+                    }.bind(this)
+                    // this.selected_image = event.target.result;
+                }
+            }
+        }
+
+        Vue.createApp(MyApp).mount("#app");
+    </script>
+</body>
+</html>
