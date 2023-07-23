@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.4/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/vue/3.2.36/vue.global.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.min.js"></script>
+    <link rel="stylesheet" href="https://qmsg.refrain.xyz/message.min.css">
+    <script src="https://qmsg.refrain.xyz/message.min.js"></script>    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/1.0.21/jquery.csv.min.js" integrity="sha512-Y8iWYJDo6HiTo5xtml1g4QqHtl/PO1w+dmUpQfQSOTqKNsMhExfyPN2ncNAe9JuJUSKzwK/b6oaNPop4MXzkwg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <meta name="description" content="快速查找迷你世界游戏相关道具ID及相关信息，开发者好帮手！">
+    <meta name="keywords" content="Starlight Studio,星光工作室,心鼠工坊，迷你世界社区,编程,文创">
+    <link rel="shortcut icon" href="https://ustarry.github.io/favicon.ico" type="image/x-icon">
+    <meta name="robots" content="all">
+    <title>ID信息库 | 心鼠工坊</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+    
+        .nav {
+            height: 50px;
+            background-color: aquamarine;
+            box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 15%), inset 0 -1px 0 rgb(0 0 0 / 15%);
+        }
+
+        .nav input, .nav input:focus
+        {
+            margin: 5px;
+            width: calc(100% - 10px);
+            height: 40px;
+            border: 0;
+            border-radius: 18px;
+            outline: none;
+            text-indent: 1em;
+        }
+    
+        .container {
+            position: relative;
+            height: calc(100vh - 50px);
+            background-color: #f1f3f5;
+            overflow: auto;
+        }
+
+        .center_info
+        {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+    
+        .no_scroll_bar {
+            /* hide the scrollbar for IE */
+            -ms-overflow-style: none;
+            /* hide the scrollbar for FIREFOX */
+            overflow: -moz-scrollbars-none;
+        }
+    
+        /* hide the scrollbar for CHROME */
+        .no_scroll_bar::-webkit-scrollbar {
+            width: 0;
+        }
+
+        li
+        {
+            cursor: pointer;
+            list-style: none;
+            text-indent: 1em;
+        }
+
+        li .short_info
+        {
+            display: block;
+            float: left;
+            width: calc(100% - 90px);
+            overflow: hidden;
+        }
+        li .learn_more
+        {
+            display: block;
+            float: left;
+            width: 90px;
+        }
+        .detail_view
+        {
+            position: fixed;
+            background-color: aliceblue;
+            width: 100%;
+            height: 100%;
+        }
+        .detail_view i
+        {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            z-index: 99;
+        }
+        .detail_view
+        {
+            width: calc(100% - 10px);
+            padding: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="nav">
+            <input type="text" placeholder="输入ID或名称查找相关信息" @input="search($event)" v-model="content">
+        </div>
+        <ul class="container no_scroll_bar" @click="get_details($event)">
+            <div class="center_info" v-show="result.length == 0">
+        
+                <h2 v-show="result.length == 0">哦豁！搜索无结果!
+                </h2>
+                <p>但是点击搜索结果，可查看搜索结果的详细信息</p>
+            </div>
+        
+            <div class="detail_view" v-if="want_index != -1">
+                <h2 style="padding-top: 5px;"> 
+                    <span style="padding-left: 5px;">{{result[want_index].Name}} id {{ result[want_index].ID }}</span> <i class="bi bi-escape" @click="want_index=-1;"></i> 
+                </h2>
+                <p>名称: {{ result[want_index].Name }} id: {{ result[want_index].ID }}</p>
+                <p>作为插件名称： {{ result[want_index].Key }} 道具类型： {{ analyse_type(result[want_index].Type)}} 道具最大堆叠数量： {{result[want_index].StackMax}} </p>
+                <p>描述： {{result[want_index].Desc}}</p>
+                <p>获取方式： {{result[want_index].GetWay}}</p>
+            </div>
+            <li v-for="(item, key) in result" :data-key="key"> {{ item.Name }} ID: {{ item.ID }} </li>
+        </ul>
+    </div>
+    <script>
+        let my_app = {
+            data()
+            {
+                return {
+                    content: "",
+                    memory: undefined,
+                    want_index: -1,
+                    result: []
+                }
+            },
+            methods:
+            {
+                search(e)
+                {
+                    if (e && e.keyCode == 13)
+                    {
+                        e.target.blur();
+                        return;
+                    }
+                    this.result = []
+                    var count = 0;
+                    for (var key in this.memory)
+                    {
+                        var t = this.memory[key];
+                        if (t.ID.indexOf(this.content) != -1 || t.Name.indexOf(this.content) != -1)
+                        {
+                            this.result.push(t);
+                            ++count;
+                        }
+                    }
+                    Qmsg.info(`搜索结果共${count}个`)
+                },
+                get_details(e)
+                {
+                    var t = e.target.dataset.key;
+                    if (t != undefined)
+                    {
+                        this.want_index = t;
+                    }
+                },
+                analyse_type(code)
+                {
+                    var ret = ["无", "方块", "杂物", "工具", "一组物品", "怪物", "账号物品", "弓", "投掷", "装备", "枪械", "食物", "工具/投掷物", "工具/食物", "方块/食物", "未知", "机械", "地图通行证", "乐器", "喷漆贴图", "气泡", "武器皮肤", "播报", "称号", "特长碎片"]
+                    return ret[code] == undefined ? "未知" : ret[code];
+                }
+            },
+            mounted()
+            {
+                var loading = Qmsg.loading("ID信息库正在更新信息...")
+                $.get('data/item.csv', function (data) {
+                    Qmsg.info("ID信息库更新完毕！当前获取的ID游戏版本为1.25.6！")
+                    var result = $.csv.toObjects(data);
+                    this.memory = result;
+                }.bind(this))
+                loading.close();
+            }
+        }
+        Vue.createApp(my_app).mount("#app");
+    </script>
+</body>
+</html>

@@ -9,7 +9,7 @@
     <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.min.js"></script>
     <link rel="stylesheet" href="https://qmsg.refrain.xyz/message.min.css">
     <script src="https://qmsg.refrain.xyz/message.min.js"></script>
-    <meta name="description" content="心鼠工坊，尽情创造世界！">
+    <meta name="description" content="个性化的音乐播放器，倾听内心的声音！">
     <meta name="keywords" content="Starlight Studio,星光工作室,心鼠工坊，迷你世界社区,编程,文创">
     <link rel="shortcut icon" href="https://ustarry.github.io/favicon.ico" type="image/x-icon">
     <meta name="robots" content="all">
@@ -28,9 +28,13 @@
             </div>
         </div>
         <div class="center">
-            <ul class="no_scroll_bar">
+            <ul class="no_scroll_bar" style="position: relative;">
                 <div v-if="show_search_list">
                     <!-- <h5>搜索结果</h5> -->
+                    <div class="center_content" v-show="view_list().length == 0">
+                        <h3>暂无搜索结果</h3>
+                        <p>搜索框搜索你想听的吧！</p>
+                    </div>
                     <li v-for="(item, key) in view_list()"> 
                         <span> {{ item.author }} - {{ item.title }}</span>
                         <i class="bi bi-play-fill" @click="play_or_pause(1, key)" title="播放这首歌"></i>
@@ -40,11 +44,15 @@
                 </div>
                 <div v-else>
                     <!-- <h5>播放列表</h5> -->
+                    <div class="center_content" v-show="view_list().length == 0">
+                        <h3>暂无播放歌曲</h3>
+                        <p>添加歌曲到播放列表，或点右上角按钮快速添加歌单内歌曲!</p>
+                    </div>
                     <li v-for="(item, key) in view_list()"> 
                         <span> {{ item.author }} - {{ item.title }} </span>
                         <i class="bi bi-play-fill" @click="play_or_pause(1, key)" title="播放这首歌"></i>
                         <i class="bi bi-download" @click="download_music(item.url)" title="下载这首歌"></i>
-                        <i class="bi bi-eraser" @click="$event.target.parentNode.remove()" title="从播放列表移除"></i>
+                        <i class="bi bi-eraser" @click="my_list.splice(key, 1);" title="从播放列表移除"></i>
                     </li>
                 </div>
             </ul>
@@ -56,9 +64,9 @@
             <div class="right">
                 <p> {{ song_playing }} </p>
                 <p>
-                    <i class="bi bi-skip-start-fill"></i>
+                    <i class="bi bi-skip-start-fill" @click="play_or_pause(1, ++current_index)"></i>
                     <i :class="is_playing ? `bi bi-pause-fill` : `bi bi-play-fill`" @click="play_or_pause(0)"></i>
-                    <i class="bi bi-skip-end-fill"></i>
+                    <i class="bi bi-skip-end-fill" @click="play_or_pause(1, --current_index)"></i>
                 </p>
                 <div class="process_bar" @mousemove="change_music_time($event)" id="process_bar">
                     <div class="thumb" :style="`width: ${playoffset}px;`"></div>
@@ -68,8 +76,8 @@
         </div>
         <div class="setting form" v-show="show_setting">
             <h3>心鼠播放器开发者功能<i class="bi bi-escape" style="float: right;" @click="show_setting=!show_setting"></i></h3>
-            <p>添加歌单内歌曲到播放器 <input type="text" v-model="songs_link" placeholder="输入歌单链接，快速添加音乐到播放器" style="width: 80%;"> <span class="button"  @click="analyze_song_list()">解析</span></p>
-            <p>保存歌单歌曲，下次访问自动恢复(需联网) <span class="button"  @click="save_song_list()">保存</span></p>
+            <p>添加歌单内歌曲到播放器 <input type="text" v-model="songs_link" placeholder="输入歌单链接，快速添加歌曲到播放器" style="width: 80%;"> <span class="button"  @click="analyze_song_list()">解析</span></p>
+            <p>保存歌单歌曲，下次访问自动恢复(需联网) <span class="button"  @click="save_song_list()">保存</span> <span class="button"  @click="my_list = []">清除当前歌单</span> <span class="button" @click="remove_memory()">清除缓存歌单</span> </p> 
             <p>音乐搜索渠道: <select v-model="platform">
                 <option value="netease">网易云音乐</option>
                 <option value="qq">QQ音乐</option>
@@ -102,6 +110,10 @@
             },
             methods:
             {
+                remove_memory()
+                {
+                    localStorage.setItem("musicplayer_mylist", null);
+                },
                 view_list()
                 {
                     return this.show_search_list ? this.search_list : this.my_list;
@@ -134,9 +146,9 @@
                 {
                     var a = document.createElement('a');
                     a.href = url;
-                    a.type = "audio/*"
+                    a.type = "audio/*";
                     a.target = "_blank";
-                    a.download = "file"
+                    a.download = "file";
                     document.body.appendChild(a);
                     a.click();
                     // a.remove();
@@ -157,6 +169,15 @@
                         this.is_playing = !this.is_playing;
                         break;
                     case 1: // must play
+                        if (index == -1)
+                        {
+                            index = this.view_list().length - 1;
+                        }
+                        else if (index == this.view_list().length)
+                        {
+                            index = 0;
+                        }
+                        this.current_index = index;
                         this.audio.src = this.view_list()[index].url;
                         this.audio.play();
                         this.is_playing = true;
@@ -170,7 +191,7 @@
                 },
                 change_music_time(e)
                 {
-                    if (e.buttons ^ 1 == 0)
+                    if (e.buttons ^ 1 == 0 && this.current_index != -1)
                     {
                         var offset_x = e.offsetX;
                         if (offset_x <= this.process_bar.clientWidth)
@@ -186,7 +207,26 @@
                 },
                 analyze_song_list()
                 {
-                    Qmsg.info("此功能等待开发中！")
+                    $.getJSON(`https://api.gmit.vip/Api/MusicList?format=json&url=${this.songs_link}`,
+                    function (data) {
+                        if (data.code == 200)
+                        {
+                            Qmsg.info("成功解析歌单内歌曲，已添加到歌单中！")
+                            for (var key in data.data) 
+                            {
+                                var t = data.data[key];
+                                t.author = t.artist;
+                                t.title = t.name;
+                                t.pic = t.cover;
+                                this.my_list.push(t);
+                            }
+                            console.log(data);
+                        }
+                        else
+                        {
+                            Qmsg.error(data.msg);
+                        }
+                    }.bind(this));
                 },
                 save_song_list()
                 {

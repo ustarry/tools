@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.4/font/bootstrap-icons.css" rel="stylesheet">
+    <link crossorigin="anonymous" href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.4/font/bootstrap-icons.css" rel="stylesheet">
     <!-- <script src="https://cdn.staticfile.org/vue/3.2.36/vue.global.min.js"></script> -->
     <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.min.js"></script>
-    <link rel="stylesheet" href="https://qmsg.refrain.xyz/message.min.css">
+    <link rel="stylesheet" href="css/qmsg.css">
     <script src="https://qmsg.refrain.xyz/message.min.js"></script>
-    <meta name="description" content="心鼠工坊，尽情创造世界！">
+    <script src="https://cdn.bootcdn.net/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+    <meta name="description" content="记录生活记录美好！">
     <meta name="keywords" content="Starlight Studio,星光工作室,心鼠工坊，迷你世界社区,编程,文创">
     <link rel="shortcut icon" href="https://ustarry.github.io/favicon.ico" type="image/x-icon">
     <meta name="robots" content="all">
     <title>心鼠记事本 | 心鼠工坊</title>
-    <link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">
+    <link href="/css/editor.css" crossorigin="anonymous" rel="stylesheet">
 <style>
     *
     {
@@ -41,47 +42,66 @@
     z-index: 100; /* 按需定义 */
     height: calc(100vh - 70px);
   }
-  #toolbar-container { border-bottom: 1px solid #ccc; }
-  #editor-container {  }
+  #toolbar-container { border-bottom: 1px solid #ccc; height: 70px; overflow: auto; }
+  #editor-container {  
+    height: calc(100% - 70px);
+  }
 </style>
 </head>
 <body>
     <div class="title_bar">
         <span>心鼠记事本</span>
-        <a href="javascript:Qmsg.info(`等待开发`)">生成</a>
+        <a href="javascript:generate_img()">生成图片</a>
+        <a href="javascript:generate_html()">生成html</a>
+        <a href="javascript:save_memory()">缓存文件</a>
     </div>
     <div id="editor—wrapper">
         <div id="toolbar-container"><!-- 工具栏 --></div>
         <div id="editor-container"><!-- 编辑器 --></div>
-    </div>
-    <script src="https://unpkg.com/@wangeditor/editor@latest/dist/index.js"></script>
-<script>
-const { createEditor, createToolbar } = window.wangEditor
+    </div><script src="https://unpkg.com/@wangeditor/editor@latest/dist/index.js"></script>
+    <script>
+        const { createEditor, createToolbar } = window.wangEditor
 
-const editorConfig = {
-    placeholder: 'Type here...',
-    onChange(editor) {
-      const html = editor.getHtml()
-      console.log('editor content', html)
-      // 也可以同步到 <textarea>
-    }
-}
+        const editorConfig = {
+            placeholder: '在这里记录下你想记录的人和事吧！',
+            onChange(editor) {
+                // 也可以同步到 <textarea>
+            }
+        }
 
-const editor = createEditor({
-    selector: '#editor-container',
-    html: '<p><br></p>',
-    config: editorConfig,
-    mode: 'default', // or 'simple'
-})
+        const editor = createEditor({
+            selector: '#editor-container',
+            html: '<p><br></p>',
+            config: editorConfig,
+            mode: 'simple', // or 'simple'
+        })
 
-const toolbarConfig = {}
+        const toolbarConfig = {}
 
-const toolbar = createToolbar({
-    editor,
-    selector: '#toolbar-container',
-    config: toolbarConfig,
-    mode: 'simple', // or 'simple'
-})
-</script>
+        const toolbar = createToolbar({
+            editor,
+            selector: '#toolbar-container',
+            config: toolbarConfig,
+            mode: 'simple', // or 'simple'
+        })
+
+            function generate_img() {
+                domtoimage.toPng(document.getElementById("editor-container"))
+                    .then(function (url) {
+                        var a = document.createElement("a");
+                        a.href = url;
+                        a.download = "心鼠记事本记录.png";
+                        a.click();
+                        a.remove();
+                    })
+                    .catch(function (error) {
+                        console.error('oops, something went wrong!', error);
+                    });
+            }
+
+            function generate_html() {
+                editor.getHtml();
+            }
+    </script>
 </body>
 </html>

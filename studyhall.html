@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.4/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.4/font/bootstrap-icons.css" rel="stylesheet"  crossorigin="anonymous">
     <script src="https://cdn.staticfile.org/vue/3.2.36/vue.global.min.js"></script>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.min.js"></script>
     <link rel="stylesheet" href="https://qmsg.refrain.xyz/message.min.css">
     <script src="https://qmsg.refrain.xyz/message.min.js"></script>
-    <meta name="description" content="心鼠工坊，尽情创造世界！">
+    <meta name="description" content="温暖的自习室，卷哥卷姐的常来之地！">
     <meta name="keywords" content="Starlight Studio,星光工作室,心鼠工坊，迷你世界社区,编程,文创">
     <link rel="shortcut icon" href="https://ustarry.github.io/favicon.ico" type="image/x-icon">
     <meta name="robots" content="all">
@@ -45,6 +45,8 @@
                     <h3>心鼠自习室开发者功能</h3>
                     <h4>公告</h4>
                     <p>这里是心鼠自习室，你可以在这里快乐的自习哦！</p>
+                    <h4>测试性功能</h4>
+                    <p><a @click="save_learning_diary()">保存学习日志</a></p>
                 </div>
             </div>
         </div>
@@ -128,6 +130,10 @@
                         }
                         my_menu.remove();
                     }.bind(this), {once:true})
+                },
+                save_learning_diary()
+                {
+
                 }
             }
         }
