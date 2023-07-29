@@ -64,26 +64,30 @@
             <div class="right">
                 <p> {{ song_playing }} </p>
                 <p>
-                    <i class="bi bi-skip-start-fill" @click="play_or_pause(1, ++current_index)"></i>
+                    <i class="bi bi-skip-start-fill" @click="play_or_pause(1, --current_index)"></i>
                     <i :class="is_playing ? `bi bi-pause-fill` : `bi bi-play-fill`" @click="play_or_pause(0)"></i>
-                    <i class="bi bi-skip-end-fill" @click="play_or_pause(1, --current_index)"></i>
+                    <i class="bi bi-skip-end-fill" @click="play_or_pause(1, ++current_index)"></i>
+                    <i :class="repeat ? `bi bi-repeat-1` : `bi bi-repeat`" @click="repeat = !repeat;"></i>
                 </p>
-                <div class="process_bar" @mousemove="change_music_time($event)" id="process_bar">
+                <div class="process_bar" @mousemove="change_music_time($event)" @mousedown="change_music_time_click($event)" id="process_bar">
                     <div class="thumb" :style="`width: ${playoffset}px;`"></div>
                 </div>
-                <audio preload="auto" id="audio"></audio>
+                <audio preload="auto" id="audio" :loop="repeat ? 'loop' : null "></audio>
             </div>
         </div>
         <div class="setting form" v-show="show_setting">
             <h3>心鼠播放器开发者功能<i class="bi bi-escape" style="float: right;" @click="show_setting=!show_setting"></i></h3>
-            <p>添加歌单内歌曲到播放器 <input type="text" v-model="songs_link" placeholder="输入歌单链接，快速添加歌曲到播放器" style="width: 80%;"> <span class="button"  @click="analyze_song_list()">解析</span></p>
-            <p>保存歌单歌曲，下次访问自动恢复(需联网) <span class="button"  @click="save_song_list()">保存</span> <span class="button"  @click="my_list = []">清除当前歌单</span> <span class="button" @click="remove_memory()">清除缓存歌单</span> </p> 
+            <h4>歌单与歌曲</h4>
+            <p>解析歌单 <input type="text" v-model="songs_link" placeholder="输入歌单链接，快速添加歌曲到播放器" style="width: 70%;"> <span class="button"  @click="analyze_song_list()">解析</span></p>
+            <p>歌单储存 <span class="button"  @click="save_song_list()">保存歌单</span>  <span class="button" @click="remove_memory()">清除歌单</span> </p> 
             <p>音乐搜索渠道: <select v-model="platform">
                 <option value="netease">网易云音乐</option>
                 <option value="qq">QQ音乐</option>
                 <option value="kugou">酷狗音乐</option>
                 <option value="migu">咪咕音乐</option>
             </select></p>
+            <h4>显示</h4>
+            <p>播放器背景设置 <input type="text" v-model="background" placeholder="输入背景代码" style="width: 70%;"> <span class="button" @click="load_bk()">应用</span></p>
             <p>显示歌词 <i class="bi bi-toggle-off"></i></p>
         </div>
     </div>
@@ -94,6 +98,7 @@
                 return{
                     search_song: "",
                     songs_link: "",
+                    background: `#f1f3f5`,
                     my_list: [],
                     search_list: [],
                     process_bar: undefined,
@@ -102,6 +107,7 @@
                     is_playing: false,
                     show_search_list: true,
                     show_setting: false,
+                    repeat: false,
                     playoffset: 0,
                     platform: "netease",
                     cover: "https://ustarry.github.io/umouse/favicon.ico",
@@ -112,6 +118,7 @@
             {
                 remove_memory()
                 {
+                    this.my_list = [];
                     localStorage.setItem("musicplayer_mylist", null);
                 },
                 view_list()
@@ -201,6 +208,18 @@
                         }
                     }
                 },
+                change_music_time_click(e)
+                {
+                    if ( this.current_index != -1)
+                    {
+                        var offset_x = e.offsetX;
+                        if (offset_x <= this.process_bar.clientWidth)
+                        {
+                            this.playoffset = offset_x;
+                            this.audio.currentTime = offset_x* this.audio.duration / this.process_bar.clientWidth;
+                        }
+                    }
+                },
                 add_to_my_list(key)
                 {
                     this.my_list.push(this.search_list[key]);
@@ -218,9 +237,11 @@
                                 t.author = t.artist;
                                 t.title = t.name;
                                 t.pic = t.cover;
+                                delete t.cover;
+                                delete t.artist;
+                                delete t.name;
                                 this.my_list.push(t);
                             }
-                            console.log(data);
                         }
                         else
                         {
@@ -232,11 +253,22 @@
                 {
                     localStorage.setItem("musicplayer_mylist", JSON.stringify(this.my_list));
                     Qmsg.info("成功保存歌单!");
+                },
+                load_bk()
+                {
+                    var app = document.getElementById("app");
+                    localStorage.setItem("musicplayer_bk", this.background);
+                    if (this.background != null)
+                    {
+                        app.style.background = `${this.background}`;
+                    }
                 }
             },
             mounted()
             {
                 Qmsg.info("播放器已成功初始化!");
+                this.background = localStorage.getItem("musicplayer_bk");
+                this.load_bk();
                 try
                 {
                     var storage = localStorage.getItem("musicplayer_mylist");

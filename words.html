@@ -14,16 +14,79 @@
     <link rel="shortcut icon" href="https://ustarry.github.io/favicon.ico" type="image/x-icon">
     <meta name="robots" content="all">
     <title>单词大师 | 心鼠工坊</title>
+    <style>
+        body
+        {
+            background-image: linear-gradient(to right, #C973FF, #AEBAF8);
+        }
+        .main
+        {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 90%;
+            height: 90%;
+            max-width: 600px;
+            max-height: 600px;
+            background-color: white;
+            border-radius: 18px;
+            transform: translate(-50%, -50%);
+        }
+        .top
+        {
+            position: relative;
+            text-align: center;
+            height: 55%;
+            line-height: 100%;
+        }
+        .center
+        {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .bottom
+        {
+            height: 45%;
+        }
+    </style>
 </head>
 <body>
+    <div id="app">
+        <div class="main">
+            <div class="top">
+                <div class="center">
+                    
+                <h1> 
+                    <i class="bi bi-volume-up" @click="voice()"></i> {{word}} 
+                </h1>
+                <p> {{expression}} </p>
+                </div>
+            </div>
+            <div class="bottom">
+                <select v-model="collection">
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+    </div>
     <script>
         let my_app = {
             data()
             {
-                return{}
+                return{
+                    word: "abandon",
+                    expression: "v. 放弃",
+                    collection: ""
+                }
             },
             methods:
             {
+                voice()
+                {
+                    
+                }
             }
         }
         Vue.createApp(my_app).mount("#app");

@@ -136,6 +136,7 @@
         </ul>
     </div>
     <script>
+        var timer = null;
         let my_app = {
             data()
             {
@@ -155,18 +156,25 @@
                         e.target.blur();
                         return;
                     }
-                    this.result = []
-                    var count = 0;
-                    for (var key in this.memory)
+                    if (timer)
                     {
-                        var t = this.memory[key];
-                        if (t.ID.indexOf(this.content) != -1 || t.Name.indexOf(this.content) != -1)
-                        {
-                            this.result.push(t);
-                            ++count;
-                        }
+                        clearTimeout(timer);
                     }
-                    Qmsg.info(`搜索结果共${count}个`)
+                    timer = setTimeout(function () 
+                    {
+                        this.result = []
+                        var count = 0;
+                        for (var key in this.memory) 
+                        {
+                            var t = this.memory[key];
+                            if (t.ID.indexOf(this.content) != -1 || t.Name.indexOf(this.content) != -1) 
+                            {
+                                this.result.push(t);
+                                ++count;
+                            }
+                        }
+                        Qmsg.info(`搜索结果共${count}个`)
+                    }.bind(this), 800)
                 },
                 get_details(e)
                 {
@@ -186,11 +194,13 @@
             {
                 var loading = Qmsg.loading("ID信息库正在更新信息...")
                 $.get('data/item.csv', function (data) {
-                    Qmsg.info("ID信息库更新完毕！当前获取的ID游戏版本为1.25.6！")
-                    var result = $.csv.toObjects(data);
-                    this.memory = result;
+                    setTimeout(function() {
+                        var result = $.csv.toObjects(data);
+                        this.memory = result;
+                        Qmsg.info("ID信息库更新完毕！当前获取的ID游戏版本为1.25.6！")
+                        loading.close();
+                    }.bind(this), 3000);
                 }.bind(this))
-                loading.close();
             }
         }
         Vue.createApp(my_app).mount("#app");
