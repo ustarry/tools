@@ -20,7 +20,7 @@
 
 <body>
     <div id="app">
-        <img class="main_cover" src="https://bing.img.run/uhd.php"></img>
+        <img class="main_cover" src="https://api.cyrilstudio.top/bing/image.php"></img>
         <div class="main">
             <ul class="tool_bar">
                 <li class="bi bi-table" @click="current_view=0"></li>
@@ -84,7 +84,7 @@
                                 ++this.learn_time;
                                 if (this.learn_time % 300 == 0)
                                 {
-                                    Qmsg.info(`今日你已累计学习$${this.make_learn_time(this.learn_time)}，很棒哦!`)
+                                    Qmsg.info(`今日你已累计学习${this.make_learn_time(this.learn_time)}，很棒哦!`)
                                 }
                             }
                             else
@@ -135,6 +135,9 @@
                 {
 
                 }
+            },
+            mounted()
+            {
             }
         }
         Vue.createApp(my_app).mount("#app");

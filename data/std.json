@@ -1,0 +1,94 @@
+{
+    "code": 200,
+    "modules": [
+        {
+            "module": "Standard Basic Module",
+            "short": "标准",
+            "author": "心鼠探索者",
+            "version": "0.0.1",
+            "type": "config",
+            "config": [
+                {
+                    "intro": "变量赋值",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "void": true,
+                    "template": "给$var:any赋值$val:any",
+                    "release_target": "$var = $val"
+                },
+                {
+                    "intro": "初始化临时变量",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "void": true,
+                    "template": "初始化临时变量$var:any值为$val:any",
+                    "release_target": "local $var = $val"
+                },
+                {
+                    "intro": "获得变量类型",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "void": true,
+                    "template": "获得$arg:any的类型",
+                    "release_target": "type($arg)"
+                },
+                {
+                    "intro": "如果逻辑(if)",
+                    "help": "",
+                    "type": "CONTROL",
+                    "void": true,
+                    "template": "如果$condi:bool $:block",
+                    "release_target": "if ($condi) then $block end"
+                },
+                {
+                    "intro": "否则逻辑(else)",
+                    "help": "",
+                    "type": "CONTROL",
+                    "void": true,
+                    "template": "否则 $:block",
+                    "release_target": "if ($condi) then $block1 else $block2 end"
+                },
+                {
+                    "intro": "或者逻辑(elseif)",
+                    "help": "",
+                    "type": "CONTROL",
+                    "void": true,
+                    "template": "或者 $condi:bool $:block",
+                    "release_target": "if ($condi1) then $block1 elseif ($condi2) then $block2 end"
+                },
+                {
+                    "intro": "循环逻辑(while语句)",
+                    "help": "",
+                    "type": "CONTROL",
+                    "void": true,
+                    "template": "若$condi:bool 一直执行 $:block",
+                    "release_target": "while ($condi) do $block end"
+                },
+                {
+                    "intro": "遍历数组逻辑(for in pairs)",
+                    "help": "",
+                    "type": "CONTROL",
+                    "void": true,
+                    "template": "遍历$array:array的每个下标$key:any 每个元素$value:any $:block",
+                    "release_target": "for ($key, $value) in pairs $array do $block end"
+                },
+                {
+                    "intro": "遍历table逻辑(for in ipairs)",
+                    "help": "",
+                    "type": "CONTROL",
+                    "void": true,
+                    "template": "遍历$table:table的每个键$key:any 每个值$value:any $:block",
+                    "release_target": "for ($key, $value) in ipairs $array do $block end"
+                },
+                {
+                    "intro": "结束循环",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "void": true,
+                    "template": "结束当前循环",
+                    "release_target": "break;"
+                }
+            ]
+        }
+    ]
+}
