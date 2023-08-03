@@ -16,7 +16,7 @@ var current_status = "none"
 
 // 脚本模板的编译与储存
 var loaded = []
-var purfix = ["any", "int", "bool", "number", "array", "table", "function", "block"]
+var purfix = ["any", "int", "bool", "number", "array", "string","table", "function", "block"]
 var secret = {"block": (build, arg)=> {return '';}};
 
 
@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded",function()
     add_tabs.onclick = ui_add_tabs_change;
     add_views.onclick = ui_add_views_new_action;
     app.onclick = ui_container_select_action;
-    app.onchange = change;
     ui_show_add_list();
 });
 
@@ -75,8 +74,12 @@ function ui_update_actions(module, buffer)
 
 // 添加列表的展示与隐藏
 var add_list_showed = true;
-function ui_show_add_list()
+function ui_show_add_list(status)
 {
+    if (status != void 0)
+    {
+        add_list_showed = status;
+    }
     add_list.style.display = add_list_showed ? 'none' : 'block';
     add_list_showed = !add_list_showed;
 }
@@ -102,36 +105,64 @@ function ui_add_tabs_change(e)
 }
 
 
-function change(e)
-{
-}
 
 // 添加action
 function ui_add_views_new_action(e)
 {
     if (e.target != add_views && e.target.getAttribute("key") != void 0)
     {
-        var module_name = e.target.parentNode.getAttribute("module");
-        var index = parseInt(e.target.getAttribute("key"));
-        if (index == NaN) return;
-        var target = loaded[module_name][index];
-        switch (target.type)
+        if (current_status == "function") 
         {
-        case "STATEMENT":
-            var action = container.appendChild(document.createElement("div"));
-            action.className = "normal_statement";
-            action.innerHTML = target.build;
-            action.setAttribute("module", module_name);
-            action.setAttribute("key", index);
-            break;
-        case "CONTROL":
-            var control = container.appendChild(document.createElement("div"));
-            control.className = "control";
-            control.innerHTML = `<div class="control_statement">${target.build}</div> <div class="block"></div>`
-            break;
-        default:
-            action.remove();
+            var module_name = e.target.parentNode.getAttribute("module");
+            var index = parseInt(e.target.getAttribute("key"));
+            if (index == NaN) return;
+            var target = loaded[module_name][index];
+            if (target.type == "STATEMENT")
+            {
+                var accept_type = last_target.getAttribute("type");
+                if (target.return == "void")
+                {
+                    Qmsg.error(`错误！[${target.intro}]没有返回值！无法在此使用！`)
+                }
+                else if (accept_type == "any" || accept_type == target.return)
+                {
+                    last_target.innerHTML = target.build;
+                    last_target.setAttribute("module", module_name);
+                    last_target.setAttribute("key", index);
+                }
+                else
+                {
+                    Qmsg.error(`错误！${target.intro}的接收类型${target.return}与${accept_type}不兼容！无法使用！`)
+                }
+            }
         }
+        else 
+        {
+            var module_name = e.target.parentNode.getAttribute("module");
+            var index = parseInt(e.target.getAttribute("key"));
+            if (index == NaN) return;
+            var target = loaded[module_name][index];
+            switch (target.type) 
+            {
+                case "STATEMENT":
+                    var action = container.appendChild(document.createElement("div"));
+                    action.className = "normal_statement";
+                    action.innerHTML = target.build;
+                    action.setAttribute("module", module_name);
+                    action.setAttribute("key", index);
+                    break;
+                case "CONTROL":
+                    var control = container.appendChild(document.createElement("div"));
+                    control.className = "control";
+                    control.innerHTML = `<div class="control_statement">${target.build}</div> <div class="block"></div>`;
+                    control.setAttribute("module", module_name);
+                    control.setAttribute("key", index);
+                    break;
+                default:
+                    action.remove();
+            }
+        }
+
     }
 }
 
@@ -142,7 +173,7 @@ function ui_container_select_action(e)
     // 初始化弹出菜单
     if (void 0 == pop_up_menu)
     {
-        pop_up_menu = container.appendChild(document.createElement("div"));
+        pop_up_menu = app.appendChild(document.createElement("div"));
         pop_up_menu.className = "pop_up_menu";
         pop_up_menu.onclick = ui_click_pop_up_menu;
     }
@@ -164,11 +195,15 @@ function ui_container_select_action(e)
                 var statement = e.target.className;
                 if (statement == "normal_statement")
                 {
-                    pop_up_menu.innerHTML = `<div>移动</div><div>移除</div>`
+                    pop_up_menu.innerHTML = `<div>移动</div><div>拷贝</div><div>移除</div>`
                 }
                 else if (statement == "control_statement")
                 {
-                    pop_up_menu.innerHTML = `<div>移动</div><div>移除</div>`
+                    pop_up_menu.innerHTML = `<div>移动</div><div>拷贝</div><div>移除</div>`
+                }
+                else
+                {
+                    break;
                 }
                 break;
             case "move": 
@@ -177,12 +212,18 @@ function ui_container_select_action(e)
                 {
                     e.target.appendChild(last_target);
                 }
+                else if (e.target.className == "control_statement")
+                {
+                    e.target.parentNode.parentNode.insertBefore(last_target, e.target.parentNode);
+                }
                 else
                 {
                     e.target.parentNode.insertBefore(last_target, e.target);
                 }
                 pop_up_menu.style = "display: none;";
                 return;
+            case "function":
+                break;
             }
             
             if (last_target.className == "block" || last_target.className == "control_statement")
@@ -217,6 +258,14 @@ function ui_click_pop_up_menu(e)
         case "输入":
             last_target.innerText = prompt("请输入修改的内容", last_target.innerText);
             break;
+        case "函数库":
+            Qmsg.info("点击添加列表的action选择正确的函数");
+            ui_show_add_list(false);
+            current_status = "function";
+            break;
+        case "拷贝":
+            last_target.parentNode.insertBefore(last_target.cloneNode(true), last_target);
+            break;
         }
         pop_up_menu.style = "display: none;";
     }
@@ -250,11 +299,16 @@ function complie_config(url)
                         for (var j = 0; j < current.config.length; ++j)
                         {
                             var t = current.config[j];
+                            if (void 0 == t.release_target)
+                            {
+                                console.log(`错误！${t.intro}必须支持生成release版本！`);
+                                continue;
+                            }
                             var build = "";
                             var beg = 0;
                             var end = 0;
                             var not_error = true;
-                            t.args = []
+                            t.args = [];
                             for (;end < t.template.length && not_error; ++end)
                             {
                                 if (t.template[end] == '$')
@@ -286,7 +340,6 @@ function complie_config(url)
                                                         if (secret[purfix[key]])
                                                         {
                                                             build += secret[purfix[key]](build, arg);
-                                                            
                                                         }
                                                         else
                                                         {
@@ -326,39 +379,88 @@ function complie_config(url)
 
 
 // 生成可视化脚本
-function release_build()
+function build(is_released)
 {
-    var build = `\n-- made by 心鼠工坊\n-- time:${new Date().toLocaleDateString()}\n`;
-    var no_err = true;
-    for (var k = 0; k < container.children.length && no_err; ++k)
+    var base = `-- made by 心鼠工坊\n-- time:${new Date().toLocaleDateString()}\n`;
+    var result = build_script(base, container, is_released);
+    if (void 0 == result)
     {
-        var current = container.children[k];
-        var args_check = {};
-        switch (current.className) {
+        alert("生成错误！")
+    }
+    else
+    {
+        alert("生成结果:\n" +result)
+    }
+}
+
+
+function get_union_target(action, is_released)
+{
+    var release = action.release_target_union ?? action.release_target;
+    var debug = action.debug_target_union ?? action.debug_target;
+    return is_released ? release : (debug ? debug : release);
+}
+
+function get_target(action, is_released)
+{
+    return is_released ? action.release_target : (void 0 == action.debug_target ? action.release_target : action.debug_target);
+}
+
+function build_last_control(control, is_released, copy)
+{
+    var last_control = control.children[0];
+    var last_block = control.children[1];
+    for (var j = 0; j < last_control.children.length; ++j)
+    {
+        var t = last_control.children[j];
+        var name = t.getAttribute("name");
+        copy = copy.replace(`$` + name, construct_args(last_control.children[j]));
+    }
+    return `${copy.replace('$block', build_script("\n", last_block, is_released))}` ;
+}
+
+function build_script(base, zone, is_released)
+{    
+    var no_err = true;
+    var last_control_action = undefined;
+    var k = 0;
+    for (; k < zone.children.length && no_err; ++k)
+    {
+        var current = zone.children[k];
+        switch (current.className) 
+        {
             case "normal_statement":
-                var action = loaded[current.getAttribute("module")][parseInt(current.getAttribute("key"))];
-                var copy = `${action.release_target}`;
-                for (var j = 0; j < current.children.length; ++j)
+                if (last_control_action) 
                 {
-                    var arg = current.children[j];
-                    var name = arg.getAttribute("name");
-                    args_check[name] = true;
-                    copy = copy.replace(`$` + name, arg.innerText);
+                    base += `${build_last_control(zone.children[k - 1], is_released, get_target(last_control_action, is_released))}\n`;
                 }
-                for (var j = 0; j < action.args.length; ++j)
-                {
-                    if (!args_check[action.args[j]])
-                    {
-                        no_err = false;
-                        console.log(`错误！缺少参数${action.args[j]}`)
-                        break;
-                    }
-                }
-                if (!no_err) break;
-                // 参数数目检查通过
-                build += `${copy}\n`;
+                base += `${construct_args(current, is_released)}\n`;
+                last_control_action = undefined;
                 break;
-            case "control_statement":
+            case "control":
+                var cur_action = loaded[current.getAttribute("module")][parseInt(current.getAttribute("key"))];
+                if (void 0 != cur_action.meet_prev) 
+                {
+                    if (void 0 == last_control_action || cur_action.meet_prev.indexOf(last_control_action.intro) == -1) 
+                    {
+                        console.log(k + "该action无法单独存在或组合错误");
+                        no_err = false;
+                    }
+                    else
+                    {
+                        base += `${build_last_control(zone.children[k - 1], is_released, get_union_target(last_control_action, is_released))}\n`;
+                    }
+                    last_control_action = undefined;
+                }
+                if (last_control_action)
+                {
+                    base += `${build_last_control(zone.children[k - 1], is_released, get_union_target(last_control_action, is_released))}\n`;
+                }
+                if (k + 1 == zone.children.length)
+                {
+                    base += `${build_last_control(current, is_released, get_target(cur_action, is_released))}\n`
+                };
+                last_control_action = cur_action;
                 break;
             default:
                 break;
@@ -366,10 +468,31 @@ function release_build()
     }
     if (no_err)
     {
-        alert("脚本生成结果：\n" + build)
+        return base;
     }
     else
     {
-        alert("生成错误!")
+        return undefined;
+    }
+}
+
+// 递归生成脚本参数
+function construct_args(arg, is_released)
+{
+    if (arg.children.length == 0)
+    {
+        return arg.innerText;
+    }
+    else
+    {
+        var action = loaded[arg.getAttribute("module")][parseInt(arg.getAttribute("key"))];
+        var copy = `${get_target(action, is_released)}`;
+        for (var j = 0; j < arg.children.length; ++j)
+        {
+            var t = arg.children[j];
+            var name = t.getAttribute("name");
+            copy = copy.replace(`$` + name, construct_args(arg.children[j]));
+        }
+        return copy;
     }
 }

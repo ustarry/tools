@@ -21,8 +21,8 @@
         <div class="header">
             <a href="javascript:">列表</a>
             <a href="javascript:ui_show_add_list()">添加</a>
-            <a href="javascript:">debug构建</a>
-            <a href="javascript:release_build()">release构建</a>
+            <a href="javascript:build(false)">debug构建</a>
+            <a href="javascript:build(true)">release构建</a>
         </div>
         <div class="container" id="container">
         </div>
@@ -31,6 +31,7 @@
             </ul>
             <div id="add_views">
             </div>
+            <i class="bi bi-escape" onclick="ui_show_add_list(true)"></i>
         </div>
     </div>
 </body>

@@ -12,7 +12,7 @@
                     "intro": "变量赋值",
                     "help": "",
                     "type": "STATEMENT",
-                    "void": true,
+                    "return": "void",
                     "template": "给$var:any赋值$val:any",
                     "release_target": "$var = $val"
                 },
@@ -20,7 +20,7 @@
                     "intro": "初始化临时变量",
                     "help": "",
                     "type": "STATEMENT",
-                    "void": true,
+                    "return": "void",
                     "template": "初始化临时变量$var:any值为$val:any",
                     "release_target": "local $var = $val"
                 },
@@ -28,63 +28,91 @@
                     "intro": "获得变量类型",
                     "help": "",
                     "type": "STATEMENT",
-                    "void": true,
+                    "return": "any",
                     "template": "获得$arg:any的类型",
                     "release_target": "type($arg)"
+                },
+                {
+                    "intro": "转字符串",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "string",
+                    "template": "转$arg:any为字符串",
+                    "release_target": "tostring($arg)"
+                },
+                {
+                    "intro": "转数值",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "number",
+                    "template": "转为$arg:any为数值",
+                    "release_target": "tonumber($arg)"
+                },
+                {
+                    "intro": "注册事件监听器",
+                    "help": "",
+                    "type": "CONTROL",
+                    "return": "void",
+                    "template": "注册事件$event:string的监听器,以$ev:string接收事件参数 $:block",
+                    "release_target": "ScriptSupportEvent:registerEvent($event, function($ev) $blockend)"
                 },
                 {
                     "intro": "如果逻辑(if)",
                     "help": "",
                     "type": "CONTROL",
-                    "void": true,
+                    "return": "void",
                     "template": "如果$condi:bool $:block",
-                    "release_target": "if ($condi) then $block end"
+                    "release_target": "if ($condi) then $blockend",
+                    "release_target_union": "if ($condi) then $block"
                 },
                 {
                     "intro": "否则逻辑(else)",
                     "help": "",
                     "type": "CONTROL",
-                    "void": true,
+                    "return": "void",
+                    "meet_prev": ["如果逻辑(if)", "或者逻辑(elseif)"],
                     "template": "否则 $:block",
-                    "release_target": "if ($condi) then $block1 else $block2 end"
+                    "release_target": "else $blockend"
                 },
                 {
                     "intro": "或者逻辑(elseif)",
                     "help": "",
                     "type": "CONTROL",
-                    "void": true,
+                    "return": "void",
+                    "meet_prev": ["如果逻辑(if)", "或者逻辑(elseif)"],
                     "template": "或者 $condi:bool $:block",
-                    "release_target": "if ($condi1) then $block1 elseif ($condi2) then $block2 end"
+                    "release_target": "elseif ($condi) then $blockend",
+                    "release_target_union": "elseif ($condi) then $block"
                 },
                 {
                     "intro": "循环逻辑(while语句)",
                     "help": "",
                     "type": "CONTROL",
-                    "void": true,
+                    "return": "void",
                     "template": "若$condi:bool 一直执行 $:block",
-                    "release_target": "while ($condi) do $block end"
+                    "release_target": "while ($condi) do $blockend"
                 },
                 {
                     "intro": "遍历数组逻辑(for in pairs)",
                     "help": "",
                     "type": "CONTROL",
-                    "void": true,
+                    "return": "void",
                     "template": "遍历$array:array的每个下标$key:any 每个元素$value:any $:block",
-                    "release_target": "for ($key, $value) in pairs $array do $block end"
+                    "release_target": "for ($key, $value) in pairs($array) do $blockend"
                 },
                 {
                     "intro": "遍历table逻辑(for in ipairs)",
                     "help": "",
                     "type": "CONTROL",
-                    "void": true,
+                    "return": "void",
                     "template": "遍历$table:table的每个键$key:any 每个值$value:any $:block",
-                    "release_target": "for ($key, $value) in ipairs $array do $block end"
+                    "release_target": "for ($key, $value) in ipairs($table) do $block end"
                 },
                 {
                     "intro": "结束循环",
                     "help": "",
                     "type": "STATEMENT",
-                    "void": true,
+                    "return": "void",
                     "template": "结束当前循环",
                     "release_target": "break;"
                 }
