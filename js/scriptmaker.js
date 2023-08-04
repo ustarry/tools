@@ -101,7 +101,6 @@ function ui_add_tabs_change(e)
         }
         views_manager[e.target.getAttribute("module")].style = "";
     }
-    
 }
 
 
@@ -135,6 +134,7 @@ function ui_add_views_new_action(e)
                     Qmsg.error(`错误！${target.intro}的接收类型${target.return}与${accept_type}不兼容！无法使用！`)
                 }
             }
+            ui_show_add_list(true);
         }
         else 
         {
@@ -236,6 +236,11 @@ function ui_container_select_action(e)
     {
         pop_up_menu.style = "display: none;";
     }
+
+    if (current_status == "function" && add_tabs.contains(e.target))
+    {
+        return;
+    }
     
     current_status = "none";
 }
@@ -256,7 +261,7 @@ function ui_click_pop_up_menu(e)
             current_status= "move";
             break;
         case "输入":
-            last_target.innerText = prompt("请输入修改的内容", last_target.innerText);
+            last_target.innerText = prompt("请输入修改的内容", last_target.innerText) ?? last_target.innerText;
             break;
         case "函数库":
             Qmsg.info("点击添加列表的action选择正确的函数");

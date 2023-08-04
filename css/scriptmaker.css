@@ -172,6 +172,7 @@ li
     line-height: 40px;
     text-align: center;
     cursor: pointer;
+    font-size: smaller;
 }
 
 #add_views

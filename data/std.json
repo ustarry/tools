@@ -3,11 +3,35 @@
     "modules": [
         {
             "module": "Standard Basic Module",
-            "short": "标准",
+            "short": "基础",
             "author": "心鼠探索者",
             "version": "0.0.1",
             "type": "config",
             "config": [
+                {
+                    "intro": "控制台打印",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "void",
+                    "template": "控制台打印$arg:any",
+                    "release_target": "print($arg)"
+                },
+                {
+                    "intro": "聊天框显示",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "void",
+                    "template": "聊天框显示$arg:any",
+                    "release_target": "Chat:sendSystemMsg($arg)"
+                },
+                {
+                    "intro": "控制台打印",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "void",
+                    "template": "控制台打印$arg:any",
+                    "release_target": "print($arg)"
+                },
                 {
                     "intro": "变量赋值",
                     "help": "",
@@ -42,6 +66,14 @@
                 },
                 {
                     "intro": "转数值",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "number",
+                    "template": "转为$arg:any为数值",
+                    "release_target": "tonumber($arg)"
+                },
+                {
+                    "intro": "转布尔",
                     "help": "",
                     "type": "STATEMENT",
                     "return": "number",
@@ -115,6 +147,209 @@
                     "return": "void",
                     "template": "结束当前循环",
                     "release_target": "break;"
+                }
+            ]
+        },
+        {
+            "module": "Standard Basic Block Module",
+            "short": "方块",
+            "author": "心鼠探索者",
+            "version": "0.0.1",
+            "type": "config",
+            "config": [
+                {
+                    "intro": "位置处固体?",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "bool",
+                    "template": "判断位置$x:int $y:int $z:int是固体",
+                    "release_target": "0 == Block:isSolidBlock($x, $y, $z)"
+                },
+                {
+                    "intro": "位置处液体?",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "bool",
+                    "template": "判断位置$x:int $y:int $z:int是液体",
+                    "release_target": "0 == Block:isLiquidBlock($x, $y, $z)"
+                },
+                {
+                    "intro": "位置处气体?",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "bool",
+                    "template": "判断位置$x:int $y:int $z:int是气体",
+                    "release_target": "0 == Block:isAirBlock($x, $y, $z)"
+                },
+                {
+                    "intro": "获得指定位置方块id",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "int",
+                    "template": "获得指定位置$x:int $y:int $z:int方块id",
+                    "release_target": "(function() local _, r = Block:getBlockID($x, $y, $z); return r)()"
+                },
+                {
+                    "intro": "设置方块data",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "void",
+                    "template": "设置位置$x:int $y:int $z:int的方块为$id:int,data为$data:int",
+                    "release_target": "0 == Block:isAirBlock($x, $y, $z)"
+                },
+                {
+                    "intro": "获得方块data",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "int",
+                    "template": "获得位置$x:int $y:int $z:int的方块data",
+                    "release_target": "(function() local _, r = Block:getBlockData($x, $y, $z); return r)()"
+                },
+                {
+                    "intro": "放置方块",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "void",
+                    "template": "放置方块$id:int在位置$x:int $y:int $z:int朝向$face:int",
+                    "release_target": "Block:placeBlock($id, $x, $y, $z, $face)"
+                },
+                {
+                    "intro": "替换方块",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "void",
+                    "template": "替换方块$id:int在位置$x:int $y:int $z:int朝向$face:int",
+                    "release_target": "Block:replaceBlock($id, $x, $y, $z, $face)"
+                },
+                {
+                    "intro": "设置方块属性",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "void",
+                    "template": "设置方块$id:int的属性$attr:int开启状态$status:bool",
+                    "release_target": "Block:setBlockSettingAttState($id, $attr, $status)"
+                },
+                {
+                    "intro": "获取方块属性",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "bool",
+                    "template": "获取方块$id:int的属性$attr:int",
+                    "release_target": "Block:getBlockSettingAttState($id, $attr, $status)"
+                },
+                {
+                    "intro": "获取方块名称",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "string",
+                    "template": "获取方块$id:int名称",
+                    "release_target": "(function() local _, r = Block:getBlockDefName($id); return r)()"
+                },
+                {
+                    "intro": "获取方块描述",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "string",
+                    "template": "获取方块$id:int描述",
+                    "release_target": "(function() local _, r = Block:getBlockDefDesc($id); return r)()"
+                },
+                {
+                    "intro": "获取方块外观",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "string",
+                    "template": "获取方块$id:int的外观",
+                    "release_target": "(function() local _, r = Block:getBlockFacade($id); return r)()"
+                }
+            ]
+        },
+        {
+            "module": "Standard Basic Item Module",
+            "short": "道具",
+            "author": "心鼠探索者",
+            "version": "0.0.1",
+            "type": "config",
+            "config": [
+                {
+                    "intro": "获取道具名称",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "string",
+                    "template": "获得道具$id:int的名称",
+                    "release_target": "(function() local _, r = Item:getItemName($id); return r)()"
+                },
+                {
+                    "intro": "获取道具描述",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "int",
+                    "template": "获取道具$id:int描述",
+                    "release_target": "(function() local _, r = Item:getItemDesc($id); return r)()"
+                },
+                {
+                    "intro": "获取actor对应道具id",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "int",
+                    "template": "获取$actor:int对应道具id",
+                    "release_target": "(function() local _, r = Item:getItemName($actor); return r)()"
+                },
+                {
+                    "intro": "随机道具id",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "int",
+                    "template": "随机道具id",
+                    "release_target": "(function() local _, r = Item:randomItemID(); return r)()"
+                },
+                {
+                    "intro": "随机投掷物id",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "int",
+                    "template": "随机道具id",
+                    "release_target": "(function() local _, r = Item:randomProjectileID(); return r)()"
+                }
+            ]
+        },
+        {
+            "module": "Standard Basic VarLib Module",
+            "short": "触发器",
+            "author": "心鼠探索者",
+            "version": "0.0.1",
+            "type": "config",
+            "config": [
+                {
+                    "intro": "获取触发器全局变量",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "any",
+                    "template": "获得触发器类型$type:int全局变量$var:string的值",
+                    "release_target": "(function() local _, r = VarLib2:getGlobalVarByName($type, $var); return r)()"
+                },
+                {
+                    "intro": "修改触发器全局变量",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "void",
+                    "template": "修改触发器类型$type:int全局变量$var:string值为$val",
+                    "release_target": "VarLib2:setGlobalVarByName($type, $var, $val)"
+                },
+                {
+                    "intro": "获取触发器私有变量",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "any",
+                    "template": "获得触发器类型$type:int $actor:int的私有变量$var:string的值",
+                    "release_target": "(function() local _, r = VarLib2:getPlayerVarByName($actor, $type, $var); return r)()"
+                },
+                {
+                    "intro": "修改触发器私有变量",
+                    "help": "",
+                    "type": "STATEMENT",
+                    "return": "void",
+                    "template": "修改触发器类型$type:int $actor:int的私有变量$var:string值为$val",
+                    "release_target": "VarLib2:setPlayerVarByName($actor, $type, $var)"
                 }
             ]
         }
